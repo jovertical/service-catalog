@@ -12,8 +12,8 @@
 |
 */
 
-Route::namespace('Api')->name('api.')->group(function() {
-    Route::middleware('api')->prefix('auth')->name('auth.')->group(function() {
+Route::namespace('Api')->name('api.')->group(function () {
+    Route::middleware('api')->prefix('auth')->name('auth.')->group(function () {
         // Return the authentication token
         Route::post('signin', 'Auth\SessionsController@signin')->name('signin');
 

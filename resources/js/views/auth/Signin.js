@@ -15,6 +15,9 @@ import Typography from '@material-ui/core/Typography';
 import withStyles from '@material-ui/core/styles/withStyles';
 import { FormHelperText } from '@material-ui/core';
 
+import { Formik, Form } from 'formik';
+import * as Yup from 'yup';
+
 const styles = theme => ({
     main: {
         width: 'auto',
@@ -54,20 +57,17 @@ class SignIn extends React.Component {
 
         this.state = {
             loading: false,
-            email: '',
-            password: '',
-            errors: {},
         };
     }
 
-    handleSigninSubmit = async event => {
-        event.preventDefault();
-
+    handleSigninSubmit = async (values, form) => {
         this.setState({ loading: true });
+
+        form.setSubmitting(false);
 
         try {
             const { pageProps } = this.props;
-            const { email, password } = this.state;
+            const { email, password } = values;
 
             const response = await axios('/api/auth/signin', {
                 method: 'POST',
@@ -83,32 +83,31 @@ class SignIn extends React.Component {
         } catch (error) {
             const { data } = error.response;
 
-            this.setState({
-                loading: false,
-                errors: data.errors,
-            });
+            form.setErrors(data.errors);
         }
     };
 
     render() {
         const { classes } = this.props;
-        const { loading, errors } = this.state;
 
-        return (
-            <main className={classes.main}>
-                <CssBaseline />
-                <Paper className={classes.paper}>
-                    <Avatar className={classes.avatar}>
-                        <LockOutlinedIcon />
-                    </Avatar>
-                    <Typography component="h1" variant="h5">
-                        Sign in
-                    </Typography>
-                    <form
-                        className={classes.form}
-                        onSubmit={this.handleSigninSubmit}
-                        noValidate
-                    >
+        const renderForm = (
+            <Formik
+                initialValues={{
+                    email: '',
+                    password: '',
+                }}
+                validationSchema={Yup.object().shape({
+                    email: Yup.string()
+                        .required('This field is required')
+                        .email('This field must be a valid email address'),
+                    password: Yup.string().required('This field is required'),
+                })}
+                onSubmit={async (values, form) => {
+                    await this.handleSigninSubmit(values, form);
+                }}
+            >
+                {({ values, handleChange, errors, isSubmitting }) => (
+                    <Form className={classes.form} noValidate>
                         <FormControl
                             margin="normal"
                             required
@@ -123,27 +122,13 @@ class SignIn extends React.Component {
                                 id="email"
                                 name="email"
                                 autoComplete="email"
-                                value={this.state.email}
-                                onChange={event => {
-                                    event.persist();
-
-                                    this.setState(prevState => {
-                                        let errors = { ...prevState.errors };
-                                        delete errors.email;
-
-                                        return {
-                                            email: event.target.value,
-                                            errors,
-                                        };
-                                    });
-                                }}
+                                value={values.email}
+                                onChange={handleChange}
                                 autoFocus
                             />
 
                             {errors.hasOwnProperty('email') && (
-                                <FormHelperText>
-                                    {errors.email[0]}
-                                </FormHelperText>
+                                <FormHelperText>{errors.email}</FormHelperText>
                             )}
                         </FormControl>
 
@@ -154,30 +139,19 @@ class SignIn extends React.Component {
                             error={errors.hasOwnProperty('password')}
                         >
                             <InputLabel htmlFor="password">Password</InputLabel>
+
                             <Input
                                 name="password"
                                 type="password"
                                 id="password"
                                 autoComplete="current-password"
-                                value={this.state.password}
-                                onChange={event => {
-                                    event.persist();
-
-                                    this.setState(prevState => {
-                                        let errors = { ...prevState.errors };
-                                        delete errors.password;
-
-                                        return {
-                                            password: event.target.value,
-                                            errors,
-                                        };
-                                    });
-                                }}
+                                value={values.password}
+                                onChange={handleChange}
                             />
 
                             {errors.hasOwnProperty('password') && (
                                 <FormHelperText>
-                                    {errors.password[0]}
+                                    {errors.password}
                                 </FormHelperText>
                             )}
                         </FormControl>
@@ -188,17 +162,36 @@ class SignIn extends React.Component {
                             }
                             label="Remember me"
                         />
+
                         <Button
                             type="submit"
                             fullWidth
                             variant="contained"
                             color="primary"
                             className={classes.submit}
-                            disabled={loading}
+                            disabled={
+                                isSubmitting || Object.keys(errors).length > 0
+                            }
                         >
                             Sign in
                         </Button>
-                    </form>
+                    </Form>
+                )}
+            </Formik>
+        );
+
+        return (
+            <main className={classes.main}>
+                <CssBaseline />
+                <Paper className={classes.paper}>
+                    <Avatar className={classes.avatar}>
+                        <LockOutlinedIcon />
+                    </Avatar>
+                    <Typography component="h1" variant="h5">
+                        Sign in
+                    </Typography>
+
+                    {renderForm}
                 </Paper>
             </main>
         );
