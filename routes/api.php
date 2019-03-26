@@ -22,4 +22,10 @@ Route::namespace('Api')->name('api.')->group(function () {
 
         Route::post('signout', 'Auth\SessionsController@signout')->name('signout');
     });
+
+    Route::middleware('auth:api')->group(function () {
+        Route::resource('categories', 'CategoriesController', [
+            'except' => ['create', 'edit']
+        ]);
+    });
 });
