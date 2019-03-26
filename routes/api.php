@@ -19,5 +19,7 @@ Route::namespace('Api')->name('api.')->group(function () {
 
         // Return the authenticated user
         Route::get('user', 'Auth\SessionsController@user')->name('user');
+
+        Route::post('signout', 'Auth\SessionsController@signout')->name('signout');
     });
 });

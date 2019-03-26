@@ -35,4 +35,20 @@ class SessionsTest extends TestCase
             ->assertStatus(200)
             ->assertJson($user->toArray());
     }
+
+    /** @test */
+    public function a_user_can_signout()
+    {
+        $user = _test_user();
+
+        $this->post(route('api.auth.signout'), [
+            'auth_token' => $user->auth_token
+        ])
+            ->assertStatus(200);
+
+        $this->assertDatabaseHas('users', [
+            'email' => $user->email,
+            'auth_token' => null
+        ]);
+    }
 }

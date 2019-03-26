@@ -124,7 +124,8 @@ class Master extends React.Component {
     };
 
     render() {
-        const { classes, history } = this.props;
+        const { classes, history, pageProps } = this.props;
+        const { signoutUser } = pageProps;
 
         const renderNavLinks = (
             <div>
@@ -169,6 +170,7 @@ class Master extends React.Component {
                         >
                             <MenuIcon />
                         </IconButton>
+
                         <Typography
                             component="h1"
                             variant="h6"
@@ -178,10 +180,9 @@ class Master extends React.Component {
                         >
                             Dashboard
                         </Typography>
-                        <IconButton color="inherit">
-                            <Badge badgeContent={4} color="secondary">
-                                <NotificationsIcon />
-                            </Badge>
+
+                        <IconButton color="inherit" onClick={signoutUser}>
+                            Sign out
                         </IconButton>
                     </Toolbar>
                 </AppBar>
